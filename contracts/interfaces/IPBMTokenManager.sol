@@ -17,22 +17,8 @@ abstract contract IPBMTokenManager {
         uint256 expiry;
         // Metadata URI for ERC-1155 display purposes.
         string uri;
-        // OPTIONAL: Indicates if the PBM token can be transferred to a non merchant/redeemer wallet.
-        bool isTransferable;
-        // OPTIONAL: Determines whether the PBM will be burned or revoked upon expiry, under certain predefined conditions, or at the owner's discretion.
-        bool burnable;
-        // OPTIONAL: Number of decimal places for the token.
-        uint8 decimals;
-        // OPTIONAL: The address of the creator of this PBM type on this smart contract. This field is optional because the creator is msg.sender by default.
-        address creator;
-        // OPTIONAL: The smart contract address of the sovToken.
-        address tokenAddress;
         // OPTIONAL: The running balance of the PBM Token type that has been minted.
         uint256 totalSupply;
-        // OPTIONAL: An ISO4217 three-character alphabetic code may be needed for the faceValue in multicurrency PBM use cases.
-        string currencySymbol;
-        // OPTIONAL: An abbreviation for the PBM token name may be assigned.
-        string tokenSymbol;
 
         // Add other optional state variables below...
     }
