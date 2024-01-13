@@ -22,7 +22,8 @@ interface IPBM is IERC173, IERC5679Ext1155 {
     function initialise(
         address _sovToken,
         uint256 _expiry,
-        address _pbmWrapperLogic
+        address _pbmWrapperLogic,
+        address _pbmTokenManager
     ) external;
 
     /// @notice Returns the Uniform Resource Identifier (URI) metadata information for the PBM with the corresponding tokenId
