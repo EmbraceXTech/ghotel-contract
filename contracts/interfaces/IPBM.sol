@@ -69,7 +69,7 @@ interface IPBM is IERC173, IERC5679Ext1155 {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data
-    ) external;
+    ) external override;
 
     /**
         @notice Creates multiple PBM copies (ERC1155 NFT) of an existing PBM token type.
@@ -107,7 +107,7 @@ interface IPBM is IERC173, IERC5679Ext1155 {
         uint256[] calldata tokenIds,
         uint256[] calldata amounts,
         bytes calldata data
-    ) external;
+    ) external override;
 
     /**
         @notice Burns a PBM token. Upon burning of the tokens, the underlying wrapped token (if any) should be handled.
@@ -156,7 +156,7 @@ interface IPBM is IERC173, IERC5679Ext1155 {
         uint256[] calldata tokenIds,
         uint256[] calldata amounts,
         bytes calldata data
-    ) external;
+    ) external override;
 
     /// @notice Transfers the PBM(NFT) from one wallet to another.
     /// @dev This function extends the ERC-1155 standard in order to allow the PBM token to be freely transferred between wallet addresses due to
