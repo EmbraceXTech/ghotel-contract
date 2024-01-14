@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IPBMAddressList.sol";
 
-contract PBMAddressList is IPBMAddressList {
+contract PBMLogic is IPBMAddressList {
     mapping(address => bool) internal blackList;
     mapping(address => bool) internal merchantList;
 

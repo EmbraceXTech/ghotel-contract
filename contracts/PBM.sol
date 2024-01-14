@@ -7,7 +7,7 @@ contract PBM is IPBM {
     function initialise(
         address _sovToken,
         uint256 _expiry,
-        address _pbmWrapperLogic,
+        address _pbmLogic,
         address _pbmTokenManager
     ) external override {}
 
