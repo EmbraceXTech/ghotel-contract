@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./interfaces/IPBM.sol";
 
-contract PBM is IPBM {
+contract PBM is ERC1155, IPBM {
     function initialise(
         address _sovToken,
         uint256 _expiry,
