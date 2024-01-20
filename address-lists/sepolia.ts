@@ -1,0 +1,3 @@
+export const ADDRESS_LIST = {
+    "GHO": "0xe87b15cCA8982d5B4121765e439d91F57C14F8c1"
+}

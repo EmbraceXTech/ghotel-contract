@@ -21,7 +21,7 @@ interface IERC5679Ext1155 {
         address _from,
         uint256 _id,
         uint256 _amount,
-        bytes[] calldata _data
+        bytes calldata _data
     ) external;
 
     function burnBatch(

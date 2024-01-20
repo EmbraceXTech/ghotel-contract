@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./interfaces/IPBMAddressList.sol";
+import "./interfaces/IPBMLogic.sol";
 
-contract PBMLogic is IPBMAddressList {
+contract PBMLogic is IPBMLogic {
     mapping(address => bool) internal blackList;
     mapping(address => bool) internal merchantList;
 

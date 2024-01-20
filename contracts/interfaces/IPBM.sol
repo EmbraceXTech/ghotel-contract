@@ -133,7 +133,7 @@ interface IPBM is IERC173, IERC5679Ext1155 {
         uint256 tokenId,
         uint256 amount,
         bytes calldata data
-    ) external;
+    ) external override;
 
     /**
         @notice Burns multiple PBM token. Upon burning of the tokens, the underlying wrapped token (if any) should be handled.

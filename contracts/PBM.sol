@@ -5,6 +5,10 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./interfaces/IPBM.sol";
 
 contract PBM is ERC1155, IPBM {
+    address private _owner;
+
+    constructor() ERC1155("") {}
+
     function initialise(
         address _sovToken,
         uint256 _expiry,
@@ -14,7 +18,9 @@ contract PBM is ERC1155, IPBM {
 
     function uri(
         uint256 tokenId
-    ) external view override returns (string memory) {}
+    ) public view override(ERC1155, IPBM) returns (string memory) {
+        return "";
+    }
 
     function safeMint(
         address receiver,
@@ -50,7 +56,7 @@ contract PBM is ERC1155, IPBM {
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) external override {}
+    ) public override(ERC1155, IPBM) {}
 
     function safeBatchTransferFrom(
         address from,
@@ -58,7 +64,7 @@ contract PBM is ERC1155, IPBM {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) external override {}
+    ) public override(ERC1155, IPBM) {}
 
     function unwrap(
         address from,
@@ -69,4 +75,12 @@ contract PBM is ERC1155, IPBM {
     ) external override {}
 
     function revokePBM(uint256 tokenId) external override {}
+
+    function owner() external view override returns (address) {
+        return _owner;
+    }
+
+    function transferOwnership(address _newOwner) external override {
+        _owner = _newOwner;
+    }
 }

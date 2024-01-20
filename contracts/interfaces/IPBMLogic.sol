@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 /// @title PBM Address list Interface.
 /// @notice The PBM address list stores and manages whitelisted merchants/redeemers and blacklisted address for the PBMs
-interface IPBMAddressList {
+interface IPBMLogic {
     /// @notice Checks if the address is one of the blacklisted addresses
     /// @param _address The address to query
     /// @return bool_ True if address is blacklisted, else false
