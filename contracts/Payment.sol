@@ -32,33 +32,25 @@ contract Payment {
         permit2 = _permit2;
     }
 
-    function pay(address _to, address _token, uint _amount, uint _fee, address _feeTo, uint _nonce, uint _deadline, bytes calldata _signature) external returns (uint) {
+    function pay(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external returns (uint) {
         uint id = paymentCount++;
-        paymentList.push(Pay(id, block.timestamp, msg.sender, _to, _token, _amount, _fee, _feeTo));
+        paymentList.push(Pay(id, block.timestamp, _from, _to, _token, _amount, _fee, _feeTo));
 
-        // IERC20(_token).transferFrom(msg.sender, address(this), _amount);
         permit2.permitTransferFrom(
-            // The permit message.
             ISignatureTransfer.PermitTransferFrom({
                 permitted: ISignatureTransfer.TokenPermissions({
                     token: _token,
                     amount: _amount
                 }),
-                nonce: _nonce,
-                deadline: _deadline
+                nonce: _sig.nonce,
+                deadline: _sig.deadline
             }),
-            // The transfer recipient and amount.
             ISignatureTransfer.SignatureTransferDetails({
                 to: address(this),
                 requestedAmount: _amount
             }),
-            // The owner of the tokens, which must also be
-            // the signer of the message, otherwise this call
-            // will fail.
-            msg.sender,
-            // The packed signature that was the result of signing
-            // the EIP712 hash of `permit`.
-            _signature
+            _from,
+            _sig.signature
         );
         IERC20(_token).transfer(_feeTo, _fee);
         IERC20(_token).transfer(_to, _amount - _fee);
@@ -66,38 +58,14 @@ contract Payment {
         return id;
     }
 
-    function payPermit(address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _permitS) external returns (uint) {
+    function payPermit(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external returns (uint) {
         uint id = paymentCount++;
-        paymentList.push(Pay(id, block.timestamp, msg.sender, _to, _token, _amount, _fee, _feeTo));
+        paymentList.push(Pay(id, block.timestamp, _from, _to, _token, _amount, _fee, _feeTo));
 
-        (uint8 vPermit, bytes32 rPermit, bytes32 sPermit) = splitSignature(_permitS.signature);
-        IERC20Permit(_token).permit(msg.sender, address(this), _amount, _permitS.deadline, vPermit, rPermit, sPermit);
+        (uint8 v, bytes32 r, bytes32 s) = splitSignature(_sig.signature);
+        IERC20Permit(_token).permit(_from, address(this), _amount, _sig.deadline, v, r, s);
 
-        // IERC20(_token).transferFrom(msg.sender, address(this), _amount);
-        // permit2.permitTransferFrom(
-        //     // The permit message.
-        //     ISignatureTransfer.PermitTransferFrom({
-        //         permitted: ISignatureTransfer.TokenPermissions({
-        //             token: _token,
-        //             amount: _amount
-        //         }),
-        //         nonce: _nonce,
-        //         deadline: _deadline
-        //     }),
-        //     // The transfer recipient and amount.
-        //     ISignatureTransfer.SignatureTransferDetails({
-        //         to: address(this),
-        //         requestedAmount: _amount
-        //     }),
-        //     // The owner of the tokens, which must also be
-        //     // the signer of the message, otherwise this call
-        //     // will fail.
-        //     msg.sender,
-        //     // The packed signature that was the result of signing
-        //     // the EIP712 hash of `permit`.
-        //     _signature
-        // );
-        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(_token).transferFrom(_from, address(this), _amount);
         IERC20(_token).transfer(_feeTo, _fee);
         IERC20(_token).transfer(_to, _amount - _fee);
 
