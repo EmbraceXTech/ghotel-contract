@@ -40,8 +40,8 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    "bkc-testnet": {
-      url: "https://rpc-testnet.bitkubchain.io",
+    sepolia: {
+      url: "https://1rpc.io/sepolia",
       accounts: getAccounts(),
     },
     "bsc-testnet": {

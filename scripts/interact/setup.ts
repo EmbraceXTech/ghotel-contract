@@ -6,7 +6,7 @@ const main = async () => {
   const [owner] = await ethers.getSigners();
   const addressList = getAddressList(hre.network.name);
 
-  const sovToken = "";
+  const sovToken = addressList.GHO;
   const block = await ethers.provider.getBlock("latest");
   const blockTime = block?.timestamp || 0;
   const expiry = blockTime + 365 * 24 * 60;
@@ -16,7 +16,7 @@ const main = async () => {
     sovToken,
     expiry,
     addressList.TravelLogic,
-    addressList.TravelPBMManager
+    addressList.TravelPBMManger
   );
   await tx.wait();
 
