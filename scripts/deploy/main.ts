@@ -6,7 +6,7 @@ import { deployTravelPBMManager } from "./deployTravelPBMManager";
 
 const main = async () => {
   const uri =
-    "https://bafybeihidh7z4tgengyhu7qwmden6e4dzy42tds7h2jd7hsbozakpedh5i.ipfs.nftstorage.link/{id}.json";
+    "https://bafybeih5ij4dbras2du3eq2rbbl54ffzqx5dqghswpqyiarlpcs2psijji.ipfs.nftstorage.link/{id}.json";
 
   // await deployPayment(); //one time
 

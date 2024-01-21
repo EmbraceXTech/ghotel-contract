@@ -14,7 +14,7 @@ describe("TravelPBM", () => {
     let pbmDistributor: PBMDistributor;
     let govHelper: GovHelper;
 
-    const uri = "https://bafybeihidh7z4tgengyhu7qwmden6e4dzy42tds7h2jd7hsbozakpedh5i.ipfs.nftstorage.link/{id}.json";
+    const uri = "https://bafybeih5ij4dbras2du3eq2rbbl54ffzqx5dqghswpqyiarlpcs2psijji.ipfs.nftstorage.link/{id}.json";
 
     async function deployAll() {
         const [signer] = await ethers.getSigners();

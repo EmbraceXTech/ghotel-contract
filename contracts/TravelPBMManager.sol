@@ -26,7 +26,7 @@ contract TravelPBMManager is ITravelPBMManager, Ownable {
         string memory _name,
         uint256 _faceValue,
         uint256 _tokenExpiry,
-        string memory _tokenURI, // "https://bafybeihidh7z4tgengyhu7qwmden6e4dzy42tds7h2jd7hsbozakpedh5i.ipfs.nftstorage.link/{id}.json";
+        string memory _tokenURI, // "https://bafybeih5ij4dbras2du3eq2rbbl54ffzqx5dqghswpqyiarlpcs2psijji.ipfs.nftstorage.link/{id}.json";
         uint256 _percentSupport
     ) external virtual override onlyOwner returns (uint256 tokenId_) {
         tokenId_ = totalTokenType++;
