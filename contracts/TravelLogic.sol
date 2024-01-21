@@ -90,4 +90,17 @@ contract TravelLogic is ITravelLogic, Ownable {
     ) external view override returns (bool bool_) {
         return merchantList[_tokenId][_address] && !blackList[_address];
     }
+
+    function processPayment(
+        address _from,
+        address _to,
+        address _token,
+        uint _amount,
+        uint _fee,
+        address _feeTo,
+        IPayment.Signature memory _sig
+    ) external override returns (bool) {
+        payment.payPermit(_from, _to, _token, _amount, _fee, _feeTo, _sig);
+        return true;
+    }
 }

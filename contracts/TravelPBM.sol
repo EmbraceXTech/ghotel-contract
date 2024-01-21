@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./interfaces/IPBM.sol";
 import "./interfaces/ITravelLogic.sol";
 import "./interfaces/ITravelPBMManager.sol";
+import "./interfaces/IPayment.sol";
 
 contract TravelPBM is ERC1155, IPBM {
     address public sovToken;
@@ -144,11 +145,16 @@ contract TravelPBM is ERC1155, IPBM {
         require(
             block.timestamp < _manager.getTokenDetails(id).expiry, "Expired"
         );
-        // Check is unwrappable
-        // unwrap
 
-        // Otherwise transfer
-        super.safeTransferFrom(from, to, id, amount, data);
+        if (data.length > 0) {
+            (address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, IPayment.Signature memory _sig) = abi.decode(data, (address, address, address, uint, uint, address, IPayment.Signature));
+            bool _success = _logic.processPayment(_from, _to, _token, _amount, _fee, _feeTo, _sig);
+            if (_success) {
+                unwrap(from, to, id, amount, data);
+            }
+        } else {
+            super.safeTransferFrom(from, to, id, amount, data);
+        }
     }
 
     function safeBatchTransferFrom(
@@ -169,10 +175,10 @@ contract TravelPBM is ERC1155, IPBM {
         uint256 tokenId,
         uint256 amount,
         bytes memory data
-    ) external override {
+    ) public override {
         // Add unwrap conditions
         uint sovAmount = ITravelPBMManager(pbmTokenManager).pbmToSov(tokenId, amount);
-        burn(from, tokenId, amount, data);
+        _burn(from, tokenId, amount);
         IERC20(sovToken).transfer(to, sovAmount);
 
         uint256[] memory tokenIds = new uint256[](1);

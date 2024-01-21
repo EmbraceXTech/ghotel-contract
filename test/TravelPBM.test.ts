@@ -43,13 +43,14 @@ describe("TravelPBM", () => {
     }
 
     async function setup() {
-        const [signer] = await ethers.getSigners();
+        const [signer, signer2] = await ethers.getSigners();
 
         const block = await ethers.provider.getBlock("latest");
         const blockTime = block?.timestamp || 0;
         const expiry = blockTime + (365 * 24 * 60);
 
         await testGho.mint(signer.address, ethers.parseEther("10000000"));
+        await testGho.mint(signer2.address, ethers.parseEther("5000"));
         await testGho.approve(await travelPBM.getAddress(), ethers.MaxUint256);
 
         const travelLogicAddr = await travelLogic.getAddress();
@@ -87,15 +88,61 @@ describe("TravelPBM", () => {
     })
 
     it("Should be able to transfer", async () => {
+        const [signer, traveler, ota, hotel] = await ethers.getSigners();
 
+        await govHelper.whitelistTravelersAndAirdrop([traveler.address]);
+
+        const tokenName = await testGho.name();
+        const nonce = 0;
+        const deadline = Math.floor((new Date().valueOf() + 60 * 60 * 1000) / 1000);
+        const network = await traveler.provider?.getNetwork();
+        const chainId = Number(network?.chainId || BigInt(0))
+        const ghoAddress = await testGho.getAddress();
+        const paymentAddress = await payment.getAddress();
+        const paymentAmount = ethers.parseEther('60');
+        const voucherAmount = ethers.parseEther('40');
+        const fee = ethers.parseEther('5');
+
+        const domain = {
+            name: tokenName,
+            version: "1",
+            chainId: chainId,
+            verifyingContract: ghoAddress,
+
+        }
+        const types = {
+            Permit: [
+                { name: 'owner', type: 'address' },
+                { name: 'spender', type: 'address' },
+                { name: 'value', type: 'uint256' },
+                { name: 'nonce', type: 'uint256' },
+                { name: 'deadline', type: 'uint256' }
+            ],
+        }
+        const values = {
+            owner: traveler.address,
+            spender: paymentAddress,
+            value: paymentAmount,
+            nonce: nonce, //you will get once you import the erc20permit contract
+            deadline: deadline // future timestamp
+        }
+        const signature = await traveler.signTypedData(domain, types, values);
+
+        const abiCoder = new ethers.AbiCoder();
+        // (address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, IPayment.Signature memory _sig)
+        const data = abiCoder.encode(['address', 'address', 'address', 'uint256', 'uint256', 'address', 'tuple(uint256,uint256,bytes)'], [traveler.address, hotel.address, await testGho.getAddress(), paymentAmount, fee, ota.address, [nonce, deadline, signature]])
+        await travelPBM.safeTransferFrom(traveler.address, hotel, 0, voucherAmount, data);
+
+        expect(await testGho.balanceOf(ota.address)).to.eq(fee)
+        expect(await testGho.balanceOf(hotel.address)).to.eq(paymentAmount + voucherAmount - fee)
     })
 
     it("Should be able to unwrap", async () => {
-        
+
     })
 
     it("Should be able to revoke", async () => {
-        
+
     })
 
     it("Should be able to whitelist", async () => {
@@ -103,14 +150,14 @@ describe("TravelPBM", () => {
     })
 
     it("Should be able to blacklist", async () => {
-        
+
     })
 
     it("Should be able to unwhitelist", async () => {
-        
+
     })
 
     it("Should be able to unblacklist", async () => {
-        
+
     })
 })
