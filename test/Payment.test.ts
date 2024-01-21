@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { Payment, Permit2, TestERC20, TestGho } from "../typechain-types"
+import { Payment, Permit2, TestERC20, TestERC20Permit, TestGho } from "../typechain-types"
 import {
     PermitTransferFrom,
     SignatureTransfer,
@@ -30,27 +30,32 @@ describe("Payment", () => {
 
         await deployAll();
         await testERC20.mint(signer, ethers.parseEther("1000000"));
+        await testGho.mint(signer, ethers.parseEther("1000000"));
     })
 
-    it("Should be able to pay", async () => {
-        const [signer] = await ethers.getSigners();
+    it("Should be able to pay legal token with permit2", async () => {
+        const [signer, signer2, signer3] = await ethers.getSigners();
 
         const nonce = Math.floor(Math.random() * Math.pow(10, 10));
         const deadline = Math.floor((new Date().valueOf() + 60 * 60 * 1000) / 1000);
         const network = await signer.provider?.getNetwork();
         const chainId = network?.chainId || 0;
 
-        const amount = ethers.parseEther('10')
+        const amount = ethers.parseEther('10');
+
+        const tokenAddress = await testERC20.getAddress();
+        const paymentAddress = await payment.getAddress();
+        const permit2Address = await permit2.getAddress();
 
         const permit: PermitTransferFrom = {
             permitted: {
                 // token we are permitting to be transferred
-                token: await testERC20.getAddress(),
+                token: tokenAddress,
                 // amount we are permitting to be transferred
                 amount: amount,
             },
             // who can transfer the tokens
-            spender: await payment.getAddress(),
+            spender: paymentAddress,
             nonce,
             // signature deadline
             deadline,
@@ -58,24 +63,24 @@ describe("Payment", () => {
 
         const { domain, types, values } = SignatureTransfer.getPermitData(
             permit,
-            await permit2.getAddress(),
+            permit2Address,
             Number(chainId),
         );
 
         const signature = await signer.signTypedData({ ...domain, chainId: Number(chainId), salt: undefined }, types, values);
 
-        await testERC20.approve(await permit2.getAddress(), ethers.MaxUint256);
-        await payment.pay(signer.address, await testERC20.getAddress(), amount, 0, signer.address, nonce, deadline, signature);
+        await testERC20.approve(permit2Address, ethers.MaxUint256);
+        await payment.connect(signer2).pay(signer.address, signer2.address, tokenAddress, amount, 0, signer3.address, { nonce, deadline, signature });
 
         const lastPayment = await payment.paymentCount();
         const paymentInfo = await payment.getPayment(lastPayment - BigInt(1));
-        expect(paymentInfo).to.not.null;
+        expect(paymentInfo.amount).to.eq(amount)
     })
 
     it("Should be able to pay gho without approve", async () => {
-        const [signer] = await ethers.getSigners();
+        const [signer, signer2, signer3] = await ethers.getSigners();
 
-        const nonce = Math.floor(Math.random() * Math.pow(10, 10));
+        const nonce = 0;
         const deadline = Math.floor((new Date().valueOf() + 60 * 60 * 1000) / 1000);
         const network = await signer.provider?.getNetwork();
         const chainId = Number(network?.chainId || BigInt(0))
@@ -113,33 +118,13 @@ describe("Payment", () => {
             deadline: deadline // future timestamp
         }
 
-        // const abiCoder = new ethers.AbiCoder();
-
-        // console.log({
-        //     domain: await testGho.DOMAIN_SEPARATOR(),
-        //     computed: ethers.keccak256(abiCoder.encode(['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'], [
-        //         ethers.keccak256(abiCoder.encode(['string'], ['EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'])),
-        //         ethers.keccak256(abiCoder.encode(['bytes'], [abiCoder.encode(['string'], [tokenName])])),
-        //         ethers.keccak256(abiCoder.encode(['string'], ['1'])),
-        //         chainId,
-        //         ghoAddress
-        //     ]))
-        // })
-
         const signature = await signer.signTypedData(domain, types, values);
-        const { v, r, s } = ethers.Signature.from(signature);
 
-        const recovered = ethers.verifyTypedData(domain, types, values, { v, r, s });
-        console.log(recovered === signer.address);
+        await payment.payPermit(signer.address, signer2.address, ghoAddress, amount, 0, signer3.address, { nonce, deadline, signature });
 
-        await testGho.permit(signer.address, paymentAddress, amount, deadline, v, r, s);
-
-        // await testGho.approve(await permit2.getAddress(), ethers.MaxUint256);
-        // await payment.payPermit(signer.address, await testGho.getAddress(), amount, 0, signer.address, { nonce, deadline, signature });
-
-        // const lastPayment = await payment.paymentCount();
-        // const paymentInfo = await payment.getPayment(lastPayment - BigInt(1));
-        // expect(paymentInfo).to.not.null;
+        const lastPayment = await payment.paymentCount();
+        const paymentInfo = await payment.getPayment(lastPayment - BigInt(1));
+        expect(paymentInfo.amount).to.eq(amount)
     })
 
 })

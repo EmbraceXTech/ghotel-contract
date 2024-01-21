@@ -6,8 +6,6 @@ import {AccessControl} from '@openzeppelin/contracts/access/AccessControl.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IGhoToken} from './interfaces/IGhoToken.sol';
 
-import "hardhat/console.sol";
-
 /**
  * @title ERC20
  * @notice Gas Efficient ERC20 + EIP-2612 implementation
@@ -132,8 +130,6 @@ abstract contract ERC20Permit is IERC20 {
       );
 
       address recoveredAddress = ecrecover(digest, v, r, s);
-
-      console.log("Recover: ", recoveredAddress);
 
       require(recoveredAddress != address(0) && recoveredAddress == owner, 'INVALID_SIGNER');
 
