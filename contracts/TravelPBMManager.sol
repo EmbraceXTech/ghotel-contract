@@ -7,8 +7,14 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract TravelPBMManager is ITravelPBMManager, Ownable {
 
     uint256 totalTokenType;
+    address pbm;
 
     constructor() Ownable(msg.sender) {}
+
+    modifier onlyPBM() {
+        require(msg.sender == pbm, "Only PBM");
+        _;
+    }
 
     function getTokenDetails(
         uint256 tokenId
@@ -46,11 +52,11 @@ contract TravelPBMManager is ITravelPBMManager, Ownable {
         );
     }
 
-    function increaseTotalSupply(uint256 tokenId, uint256 amount) external override {
+    function increaseTotalSupply(uint256 tokenId, uint256 amount) external onlyPBM override {
         tokenTypes[tokenId].totalSupply += amount;
     }
 
-    function decreaseTotalSupply(uint256 tokenId, uint256 amount) external override {
+    function decreaseTotalSupply(uint256 tokenId, uint256 amount) external onlyPBM override {
         tokenTypes[tokenId].totalSupply -= amount;
     }
 
@@ -62,6 +68,10 @@ contract TravelPBMManager is ITravelPBMManager, Ownable {
     function sovToPBM(uint256 tokenId, uint256 sovAmount) external override view returns (uint256) {
         PBMToken memory _pbm = getTokenDetails(tokenId);
         return sovAmount * _pbm.faceValue;
+    }
+
+    function setPBM(address _pbm) external onlyOwner {
+        pbm = _pbm;
     }
 
 }

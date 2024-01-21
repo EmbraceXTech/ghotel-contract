@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/ITravelLogic.sol";
+import "./interfaces/IPayment.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TravelLogic is ITravelLogic, Ownable {
@@ -9,7 +10,11 @@ contract TravelLogic is ITravelLogic, Ownable {
     mapping(address => bool) internal travelerList;
     mapping(uint256 => mapping(address => bool)) internal merchantList;
 
-    constructor() Ownable(msg.sender) {}
+    IPayment public payment;
+
+    constructor(IPayment _payment) Ownable(msg.sender) {
+        payment = _payment;
+    }
 
     function whitelistTravelers(
         address[] memory _addresses
@@ -72,7 +77,7 @@ contract TravelLogic is ITravelLogic, Ownable {
     ) external view override returns (bool bool_) {
         return blackList[_address];
     }
-    
+
     function isTraveler(
         address _address
     ) external view override returns (bool bool_) {

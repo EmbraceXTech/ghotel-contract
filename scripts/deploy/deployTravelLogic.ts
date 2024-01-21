@@ -1,8 +1,10 @@
 import hre, { ethers } from "hardhat";
 import { TravelLogic__factory } from "../../typechain-types";
-import { setAddress } from "../../utils/address.util";
+import addressUtil, { setAddress } from "../../utils/address.util";
 
 export async function deployTravelLogic() {
+  const addressList = await addressUtil.getAddressList(hre.network.name);
+
   const [owner] = await ethers.getSigners();
 
   const TravelLogic = (await ethers.getContractFactory(
@@ -10,7 +12,7 @@ export async function deployTravelLogic() {
     owner
   )) as TravelLogic__factory;
 
-  const travelLogic = await TravelLogic.deploy();
+  const travelLogic = await TravelLogic.deploy(addressList['Payment']);
 
   await travelLogic.waitForDeployment();
 

@@ -2,27 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/IPermit2.sol";
+import "./interfaces/IPayment.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
-contract Payment {
-
-    struct Pay {
-        uint id;
-        uint timestamp;
-        address from;
-        address to;
-        address token;
-        uint amount;
-        uint fee;
-        address feeTo;
-    }
-
-    struct Signature {
-        uint nonce;
-        uint deadline;
-        bytes signature;
-    }
+contract Payment is IPayment {
 
     IPermit2 public immutable permit2;
     uint public paymentCount;
@@ -32,7 +16,7 @@ contract Payment {
         permit2 = _permit2;
     }
 
-    function pay(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external returns (uint) {
+    function pay(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external override returns (uint) {
         uint id = paymentCount++;
         paymentList.push(Pay(id, block.timestamp, _from, _to, _token, _amount, _fee, _feeTo));
 
@@ -58,7 +42,7 @@ contract Payment {
         return id;
     }
 
-    function payPermit(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external returns (uint) {
+    function payPermit(address _from, address _to, address _token, uint _amount, uint _fee, address _feeTo, Signature memory _sig) external override returns (uint) {
         uint id = paymentCount++;
         paymentList.push(Pay(id, block.timestamp, _from, _to, _token, _amount, _fee, _feeTo));
 
@@ -72,7 +56,7 @@ contract Payment {
         return id;
     }
 
-    function getPayment(uint id) external view returns (Pay memory) {
+    function getPayment(uint id) external override view returns (Pay memory) {
         return paymentList[id];
     }
 
