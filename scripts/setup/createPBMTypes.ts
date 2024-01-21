@@ -2,9 +2,7 @@ import hre, { ethers } from "hardhat";
 import { getAddressList } from "../../utils/address.util";
 import {
   TravelPBMManager__factory,
-  TravelPBM__factory,
 } from "../../typechain-types";
-import { ERC20__factory } from "../../typechain-types/factories/solmate/src/tokens";
 
 export const createPBMTypes = async () => {
   const [owner] = await ethers.getSigners();
@@ -16,8 +14,6 @@ export const createPBMTypes = async () => {
   const blockTime = block?.timestamp || 0;
   const expiry = blockTime + 365 * 24 * 60;
 
-  const sovToken = ERC20__factory.connect(addressList.GHO, owner);
-  const TravelPBM = TravelPBM__factory.connect(addressList.TravelPBM, owner);
   const TravelPBMManager = TravelPBMManager__factory.connect(
     addressList.TravelPBMManger,
     owner
