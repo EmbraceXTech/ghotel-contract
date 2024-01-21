@@ -15,12 +15,6 @@ export const mintPBM = async () => {
   const tx = await sovToken.approve(addressList['TravelPBM'], ethers.MaxUint256);
   await tx.wait();
 
-  const tx2 = await travelPBM.safeMint(addressList['PBMDistributor'], 0, ethers.parseEther("1000000"), "")
+  const tx2 = await travelPBM.safeMintBatch(addressList['PBMDistributor'], [0, 1, 2], [ethers.parseEther("400000"), ethers.parseEther("400000"), ethers.parseEther("200000")], ethers.encodeBytes32String(""))
   await tx2.wait();
-
-  const tx3 = await travelPBM.safeMint(addressList['PBMDistributor'], 1, ethers.parseEther("1000000"), "")
-  await tx3.wait();
-
-  const tx4 = await travelPBM.safeMint(addressList['PBMDistributor'], 2, ethers.parseEther("1000000"), "")
-  await tx4.wait();
 };

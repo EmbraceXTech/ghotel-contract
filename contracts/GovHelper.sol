@@ -28,13 +28,7 @@ contract GovHelper is Ownable {
         address[] memory _travelers
     ) external onlyOwner {
         for (uint i = 0; i < _travelers.length; i++) {
-            distributor.distributePBM(
-                _travelers[i],
-                pbm,
-                ids,
-                amounts,
-                ""
-            );
+            distributor.distributePBM(_travelers[i], pbm, ids, amounts, "");
         }
         logic.whitelistTravelers(_travelers);
     }

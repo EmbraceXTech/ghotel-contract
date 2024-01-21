@@ -1,58 +1,89 @@
 import { ethers } from "hardhat";
-import { TestERC20, TravelLogic, TravelPBM, TravelPBMManager } from "../typechain-types"
+import { GovHelper, PBMDistributor, Payment, Permit2, TestERC20, TestGho, TravelLogic, TravelPBM, TravelPBMManager } from "../typechain-types"
 import { expect } from "chai";
 
 describe("TravelPBM", () => {
 
-    let testERC20: TestERC20;
+    let permit2: Permit2;
+    let payment: Payment;
+    let testGho: TestGho;
+
     let travelLogic: TravelLogic;
     let travelPbmManager: TravelPBMManager;
     let travelPBM: TravelPBM;
+    let pbmDistributor: PBMDistributor;
+    let govHelper: GovHelper;
 
     const uri = "https://bafybeihidh7z4tgengyhu7qwmden6e4dzy42tds7h2jd7hsbozakpedh5i.ipfs.nftstorage.link/{id}.json";
 
-
     async function deployAll() {
-        const testERC20Factory = await ethers.getContractFactory("TestERC20");
+        const [signer] = await ethers.getSigners();
+
+        const permit2Factory = await ethers.getContractFactory("Permit2");
+        const paymentFactory = await ethers.getContractFactory("Payment");
+        const testGhoFactory = await ethers.getContractFactory("TestGho");
+
         const travelLogicFactory = await ethers.getContractFactory("TravelLogic");
         const travelPbmManagerFactory = await ethers.getContractFactory("TravelPBMManager");
         const travelPBMFactory = await ethers.getContractFactory("TravelPBM");
 
-        testERC20 = await testERC20Factory.deploy();
-        travelLogic = await travelLogicFactory.deploy();
+        const pbmDistributorFactory = await ethers.getContractFactory("PBMDistributor");
+        const govHelperFactory = await ethers.getContractFactory("GovHelper");
+
+        permit2 = await permit2Factory.deploy();
+        payment = await paymentFactory.deploy(await permit2.getAddress());
+        testGho = await testGhoFactory.deploy(signer.address);
+
+        travelLogic = await travelLogicFactory.deploy(await payment.getAddress());
         travelPbmManager = await travelPbmManagerFactory.deploy();
         travelPBM = await travelPBMFactory.deploy(uri);
+
+        pbmDistributor = await pbmDistributorFactory.deploy();
+        govHelper = await govHelperFactory.deploy(await travelPBM.getAddress(), await pbmDistributor.getAddress(), await travelLogic.getAddress());
+    }
+
+    async function setup() {
+        const [signer] = await ethers.getSigners();
 
         const block = await ethers.provider.getBlock("latest");
         const blockTime = block?.timestamp || 0;
         const expiry = blockTime + (365 * 24 * 60);
 
-        const erc20Addr = await testERC20.getAddress();
+        await testGho.mint(signer.address, ethers.parseEther("10000000"));
+        await testGho.approve(await travelPBM.getAddress(), ethers.MaxUint256);
+
         const travelLogicAddr = await travelLogic.getAddress();
         const travelPBMManagerAddr = await travelPbmManager.getAddress();
+        await travelPBM.initialise(await testGho.getAddress(), expiry, travelLogicAddr, travelPBMManagerAddr);
 
-        await travelPBM.initialise(erc20Addr, expiry, travelLogicAddr, travelPBMManagerAddr);
+        await travelPbmManager.setPBM(await travelPBM.getAddress());
+        await travelPbmManager.createPBMTokenType("Hotel", 1, expiry, uri, 4000)
+        await travelPbmManager.createPBMTokenType("Flight", 1, expiry, uri, 4000)
+        await travelPbmManager.createPBMTokenType("Food", 1, expiry, uri, 3000)
+
+        await travelLogic.transferOwnership(await govHelper.getAddress());
+        await pbmDistributor.transferOwnership(await govHelper.getAddress());
+        await travelPBM.safeMintBatch(await pbmDistributor.getAddress(), [0, 1, 2], [ethers.parseEther("400000"), ethers.parseEther("400000"), ethers.parseEther("20000")], ethers.encodeBytes32String(""))
     }
 
     beforeEach(async () => {
         const [signer] = await ethers.getSigners();
 
         await deployAll();
-        await testERC20.mint(signer, ethers.parseEther("1000000"));
+        await setup();
     })
 
-    it("Should be able to mint", async () => {
-        const [signer] = await ethers.getSigners();
+    it("Should be able to whitelist travelers and distribute token", async () => {
+        const [signer, signer2] = await ethers.getSigners();
 
-        const block = await ethers.provider.getBlock("latest");
-        const blockTime = block?.timestamp || 0;
-        const expiry = blockTime + (365 * 24 * 60);
+        await govHelper.whitelistTravelersAndAirdrop([signer2.address]);
 
-        await travelPbmManager.createPBMTokenType("Hotel", 1, expiry, uri, 4000);
-        await testERC20.approve(await travelPBM.getAddress(), ethers.MaxUint256);
-        await travelPBM.safeMint(signer.address, 0, ethers.parseEther("10"), ethers.encodeBytes32String(""));
+        const balances = await travelPBM.balanceOfBatch([signer2.address, signer2.address, signer2.address], [0, 1, 2]);
+        const expectedBalances = [ethers.parseEther('500'), ethers.parseEther('500'), ethers.parseEther('100')]
 
-        expect(await travelPBM.balanceOf(signer.address, 0)).eq(ethers.parseEther("10").toString())
+        for (let i = 0; i < balances.length; i++) {
+            expect(balances[i]).to.eq(expectedBalances[i])
+        }
     })
 
     it("Should be able to transfer", async () => {

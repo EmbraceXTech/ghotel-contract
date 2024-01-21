@@ -5,15 +5,10 @@ import { setPBMToManager } from "./setPBMToManager";
 import { transferLogicOwnership } from "./transferLogicOwnership";
 
 const main = async () => {
-  // const uri =
-  //   "https://bafybeihidh7z4tgengyhu7qwmden6e4dzy42tds7h2jd7hsbozakpedh5i.ipfs.nftstorage.link/{id}.json";
-
-  // await deployPayment(); //one time
-
-  await initPBM();
-  await setPBMToManager();
-  await createPBMTypes();
-  await transferLogicOwnership();
+  // await initPBM();
+  // await setPBMToManager();
+  // await createPBMTypes();
+  // await transferLogicOwnership();
   await mintPBM();
 };
 
