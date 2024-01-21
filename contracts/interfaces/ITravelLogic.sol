@@ -2,14 +2,18 @@
 pragma solidity ^0.8.0;
 
 interface ITravelLogic {
-    function whitelistAddresses(uint256 _tokenId, address[] memory addresses, string memory metadata) external;
-    function unWhitelistAddresses(uint256 _tokenId, address[] memory addresses, string memory metadata) external;
-    function blacklistAddresses(uint256 _tokenId, address[] memory addresses, string memory metadata) external;
-    function unBlacklistAddresses(uint256 _tokenId, address[] memory addresses, string memory metadata) external;
+    function whitelistTravelers(address[] memory addresses) external;
+    function unWhitelistTravelers(address[] memory addresses) external;
+    function whitelistMerchants(uint256 _tokenId, address[] memory addresses) external;
+    function unWhitelistMerchants(uint256 _tokenId, address[] memory addresses) external;
+    function blacklistAddresses(address[] memory addresses) external;
+    function unBlacklistAddresses(address[] memory addresses) external;
 
-    function isBlacklisted(uint256 _tokenId,  address _address) external returns (bool bool_);
+    function isTraveler(address _address) external returns (bool bool_);
     function isMerchant(uint256 _tokenId, address _address) external returns (bool bool_);
+    function isBlacklisted(address _address) external returns (bool bool_);
 
-    event MerchantList(string action, uint256 _tokenId, address[] addresses, string metadata);
-    event Blacklist(string action, uint256 _tokenId, address[] addresses, string metadata);
+    event TravelerList(string action, address[] addresses);
+    event MerchantList(string action, uint256 _tokenId, address[] addresses);
+    event Blacklist(string action, address[] addresses);
 }

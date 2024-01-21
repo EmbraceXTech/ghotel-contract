@@ -62,7 +62,7 @@ contract TravelPBM is ERC1155, IPBM {
         bytes calldata data
     ) public override {
         require(
-            !ITravelLogic(pmbLogic).isBlacklisted(tokenId, receiver),
+            !ITravelLogic(pmbLogic).isBlacklisted(receiver),
             "The receiver is on blacklist"
         );
 
@@ -138,7 +138,7 @@ contract TravelPBM is ERC1155, IPBM {
         ITravelLogic _logic = ITravelLogic(pmbLogic);
         ITravelPBMManager _manager = ITravelPBMManager(pbmTokenManager);
         require(
-            !_logic.isBlacklisted(id, to),
+            !_logic.isBlacklisted(to),
             "The receiver is on blacklist"
         );
         require(

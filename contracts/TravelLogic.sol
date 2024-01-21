@@ -5,66 +5,84 @@ import "./interfaces/ITravelLogic.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TravelLogic is ITravelLogic, Ownable {
-    mapping(uint256 => mapping(address => bool)) internal blackList;
+    mapping(address => bool) internal blackList;
+    mapping(address => bool) internal travelerList;
     mapping(uint256 => mapping(address => bool)) internal merchantList;
 
     constructor() Ownable(msg.sender) {}
 
-    function whitelistAddresses(
-        uint256 _tokenId, 
-        address[] memory _addresses,
-        string memory metadata
+    function whitelistTravelers(
+        address[] memory _addresses
+    ) external override onlyOwner {
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            travelerList[_addresses[i]] = true;
+        }
+        emit TravelerList("add", _addresses);
+    }
+
+    function unWhitelistTravelers(
+        address[] memory _addresses
+    ) external override onlyOwner {
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            travelerList[_addresses[i]] = false;
+        }
+        emit TravelerList("remove", _addresses);
+    }
+
+    function whitelistMerchants(
+        uint256 _tokenId,
+        address[] memory _addresses
     ) external override onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
             merchantList[_tokenId][_addresses[i]] = true;
         }
-        emit MerchantList("add", _tokenId, _addresses, metadata);
+        emit MerchantList("add", _tokenId, _addresses);
     }
 
-    function unWhitelistAddresses(
-        uint256 _tokenId, 
-        address[] memory _addresses,
-        string memory metadata
+    function unWhitelistMerchants(
+        uint256 _tokenId,
+        address[] memory _addresses
     ) external override onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
             merchantList[_tokenId][_addresses[i]] = false;
         }
-        emit MerchantList("remove", _tokenId, _addresses, metadata);
+        emit MerchantList("remove", _tokenId, _addresses);
     }
 
     function blacklistAddresses(
-        uint256 _tokenId,
-        address[] memory _addresses,
-        string memory metadata
+        address[] memory _addresses
     ) external override onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
-            blackList[_tokenId][_addresses[i]] = true;
+            blackList[_addresses[i]] = true;
         }
-        emit Blacklist("add", _tokenId, _addresses, metadata);
+        emit Blacklist("add", _addresses);
     }
 
     function unBlacklistAddresses(
-        uint256 _tokenId,
-        address[] memory _addresses,
-        string memory metadata
+        address[] memory _addresses
     ) external override onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
-            blackList[_tokenId][_addresses[i]] = false;
+            blackList[_addresses[i]] = false;
         }
-        emit Blacklist("remove", _tokenId, _addresses, metadata);
+        emit Blacklist("remove", _addresses);
     }
 
     function isBlacklisted(
-        uint256 _tokenId,
         address _address
     ) external view override returns (bool bool_) {
-        return blackList[_tokenId][_address];
+        return blackList[_address];
     }
     
+    function isTraveler(
+        address _address
+    ) external view override returns (bool bool_) {
+        return travelerList[_address] && !blackList[_address];
+    }
+
     function isMerchant(
         uint256 _tokenId,
         address _address
     ) external view override returns (bool bool_) {
-        return merchantList[_tokenId][_address] && !blackList[_tokenId][_address];
+        return merchantList[_tokenId][_address] && !blackList[_address];
     }
 }
